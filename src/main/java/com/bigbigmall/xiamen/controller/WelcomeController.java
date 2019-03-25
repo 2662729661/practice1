@@ -1,5 +1,8 @@
 package com.bigbigmall.xiamen.controller;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -34,30 +37,44 @@ public class WelcomeController {
         public JSONArray getMultiplicationTableXML() {
 
                 JSONArray array = new JSONArray();
-                for (int i = 1; i <= 9; i++) {
-                        JSONArray array2 = new JSONArray();
-                        array.put(array2);
-                        for (int j = 2; j <= 5; j++) {
-                                JSONObject object = new JSONObject();
-                                object.put("mt1", " " + j + " ");
-                                object.put("mt2", i + " = ");
-                                object.put("mt3", (i * j));
-                                array2.put(object);
-                        }
+
+                //获取2-5的值
+                List<JSONArray> list = getArray(2, 5);
+                for (int i = 0; i < list.size(); i++) {
+                        array.put(list.get(i));
                 }
 
+                //获取6-9的值
+                List<JSONArray> list2 = getArray(6, 9);
+                for (int i = 0; i < list2.size(); i++) {
+                        array.put(list2.get(i));
+                }
+
+                return array;
+        }
+
+        /**
+         * 获取九九乘法表数据
+         *
+         * @param s 开始值
+         * @param v 结束值
+         * @return 返回集合
+         */
+        public List<JSONArray> getArray(int s, int v) {
+                List<JSONArray> list = new ArrayList<>();
+
                 for (int i = 1; i <= 9; i++) {
-                        JSONArray array2 = new JSONArray();
-                        array.put(array2);
-                        for (int j = 6; j <= 9; j++) {
+                        JSONArray array = new JSONArray();
+                        for (int j = s; j <= v; j++) {
                                 JSONObject object = new JSONObject();
                                 object.put("mt1", " " + j + " ");
                                 object.put("mt2", i + " = ");
                                 object.put("mt3", (i * j));
-                                array2.put(object);
+                                array.put(object);
                         }
+                        list.add(array);
                 }
-                return array;
+                return list;
         }
 
         /**
@@ -87,34 +104,31 @@ public class WelcomeController {
                         JSONArray array = mtArray.getJSONArray(i);
 
                         for (int j = 0; j < array.length(); j++) {
+                                Element msElement = doc.createElement("ms");
+                                mtsElement.appendChild(msElement);
                                 //添加乘数
-                                Element mtElement = doc.createElement("mt1" + j);
+                                Element mtElement = doc.createElement("mt1");
                                 //添加被乘数
-                                Element mt2Element = doc.createElement("mt2" + j);
+                                Element mt2Element = doc.createElement("mt2");
                                 //添加积
-                                Element mt3Element = doc.createElement("mt3" + j);
-                                mtsElement.appendChild(mtElement);
-                                mtsElement.appendChild(mt2Element);
-                                mtsElement.appendChild(mt3Element);
+                                Element mt3Element = doc.createElement("mt3");
+                                msElement.appendChild(mtElement);
+                                msElement.appendChild(mt2Element);
+                                msElement.appendChild(mt3Element);
                                 JSONObject object = array.getJSONObject(j);
-                                Text mtTextNode = doc.createTextNode(object.get("mt1").toString());
-                                Text mt2TextNode = doc.createTextNode(object.get("mt2").toString());
-                                Text mt3TextNode = doc.createTextNode(object.get("mt3").toString());
-                                mtElement.appendChild(mtTextNode);
-                                mt2Element.appendChild(mt2TextNode);
-                                mt3Element.appendChild(mt3TextNode);
+                                mtElement.appendChild(doc.createTextNode(object.get("mt1").toString()));
+                                mt2Element.appendChild(doc.createTextNode(object.get("mt2").toString()));
+                                mt3Element.appendChild(doc.createTextNode(object.get("mt3").toString()));
 
                         }
                 }
 
                 Source source = new DOMSource(doc);
-
                 // 将XML源文件添加到模型中，以便XsltView能够检测
                 ModelAndView model = new ModelAndView("multiplication");
                 model.addObject("xmlSource", source);
 
                 return model;
-
                 //TransformerFactory.newInstance().newTransformer().transform(new DOMSource(doc), new StreamResult(new File("C:\\netBensJmvn/a.xml")));
         }
 
@@ -178,191 +192,6 @@ public class WelcomeController {
                 }
                 String toString = array.toString();
                 return toString;
-        }
-
-        /**
-         * 九九乘法表2-前端页面调用 2019-3-21
-         *
-         * @return
-         */
-        @RequestMapping("/multiplication2")
-        @ResponseBody
-        public String getTable() {
-                JSONArray array = new JSONArray();
-                for (int i = 0; i <= 10; i++) {
-                        JSONArray array1 = new JSONArray();
-                        array.put(array1);
-
-                        JSONObject object = new JSONObject();
-                        object.put(i + "", i + "");
-                        array1.put(object);
-
-                        if (i == 0) {
-                                for (int j = 1; j <= 10; j++) {
-                                        JSONObject object1 = new JSONObject();
-                                        object1.put(i + "", j + "");
-                                        array1.put(object1);
-                                }
-                        } else {
-                                for (int j = 1; j <= 10; j++) {
-                                        JSONObject object1 = new JSONObject();
-                                        object1.put(i + "", (i * j) + "");
-                                        array1.put(object1);
-                                }
-                        }
-                }
-                String string = array.toString();
-                return string;
-        }
-
-        /**
-         * 九九乘法表2-xml 2019-3-24
-         *
-         * @return
-         */
-        @RequestMapping("/multiplicationXML2")
-        @ResponseBody
-        public ModelAndView getTableXML(HttpServletResponse response) throws Exception {
-                //创建文档对象
-                DocumentBuilderFactory newInstance = DocumentBuilderFactory.newInstance();
-                DocumentBuilder newDocumentBuilder = newInstance.newDocumentBuilder();
-                Document doc = newDocumentBuilder.newDocument();
-
-                //创建根节点
-                Element documentElement = doc.createElement("document");
-                doc.appendChild(documentElement);
-
-                //获取数据
-                String table = getTable();
-                JSONArray arrays = new JSONArray(table);
-
-                //循环
-                for (int i = 0; i < arrays.length(); i++) {
-                        Element mtsElement = doc.createElement("mts");
-                        documentElement.appendChild(mtsElement);
-                        JSONArray array = arrays.getJSONArray(i);
-
-                        for (int j = 0; j < array.length(); j++) {
-                                Element mtElement = doc.createElement("mt" + j);
-                                mtsElement.appendChild(mtElement);
-                                JSONObject object = array.getJSONObject(j);
-                                Text mtTextNode = doc.createTextNode(object.get(i + "").toString());
-                                mtElement.appendChild(mtTextNode);
-                        }
-
-                }
-
-                Source source = new DOMSource(doc);
-
-                // 将XML源文件添加到模型中，以便XsltView能够检测
-                ModelAndView model = new ModelAndView("multiplication2");
-                model.addObject("xmlSource", source);
-
-                return model;
-                //TransformerFactory.newInstance().newTransformer().transform(new DOMSource(doc), new StreamResult(response.getOutputStream()));
-        }
-
-        /**
-         * 九九乘法表3-前端页面调用 2019-3-21
-         *
-         * @return
-         */
-        @RequestMapping("/multiplication3")
-        @ResponseBody
-        public String getMultiplication() {
-
-                JSONArray array = new JSONArray();
-                for (int i = 99; i > 0; i--) {
-                        JSONArray array1 = new JSONArray();
-                        array.put(array1);
-                        for (int j = 1; j <= i; j++) {
-                                JSONObject object = new JSONObject();
-                                object.put(i + "", i + "&#215;" + j + "=" + (i * j));
-                                array1.put(object);
-                        }
-                }
-                String string = array.toString();
-                return string;
-        }
-
-        /**
-         * 九九乘法表3-xml-controller调用 2019-3-24
-         *
-         * @return
-         */
-        @RequestMapping("/multiplication3XML")
-        @ResponseBody
-        public JSONArray getMultiplicationXML() {
-                JSONArray array = new JSONArray();
-                for (int i = 9; i > 0; i--) {
-                        JSONArray array1 = new JSONArray();
-                        array.put(array1);
-                        for (int j = 1; j <= i; j++) {
-                                JSONObject object = new JSONObject();
-                                object.put("mt1", i + " ");
-                                object.put("mt2", j + " = ");
-                                object.put("mt3", (i * j));
-                                array1.put(object);
-                        }
-                }
-                return array;
-        }
-
-        /**
-         * 九九乘法表3-XML 2019-3-24
-         *
-         * @return
-         */
-        @RequestMapping("/multiplicationXML3")
-        @ResponseBody
-        public ModelAndView getMultiplicationXML(HttpServletResponse response) throws Exception {
-                //获取文档对象
-                DocumentBuilderFactory newInstance = DocumentBuilderFactory.newInstance();
-                DocumentBuilder newDocumentBuilder = newInstance.newDocumentBuilder();
-                Document doc = newDocumentBuilder.newDocument();
-
-                //创建根节点
-                Element documentElement = doc.createElement("document");
-                doc.appendChild(documentElement);
-
-                //获取Array
-                JSONArray multiplicationArray = getMultiplicationXML();
-                int s = 1;
-                //循环
-                for (int i = multiplicationArray.length() - 1; i >= 0; i--) {
-                        Element mtsElement = doc.createElement("mts");
-                        documentElement.appendChild(mtsElement);
-                        JSONArray mtsArray = multiplicationArray.getJSONArray(i);
-
-                        for (int j = 0; j < mtsArray.length(); j++) {
-                                Element msElement = doc.createElement("ms");
-                                mtsElement.appendChild(msElement);
-                                Element mtElement = doc.createElement("mt");
-                                Element mt2Element = doc.createElement("mt1");
-                                Element mt3Element = doc.createElement("mt2");
-                                msElement.appendChild(mtElement);
-                                msElement.appendChild(mt2Element);
-                                msElement.appendChild(mt3Element);
-                                if (s > j) {
-                                        JSONObject mtObject = mtsArray.getJSONObject(j);
-                                        Text mt1TextNode = doc.createTextNode(mtObject.get("mt1").toString());
-                                        Text mt2TextNode = doc.createTextNode(mtObject.get("mt2").toString());
-                                        Text mt3TextNode = doc.createTextNode(mtObject.get("mt3").toString());
-                                        mtElement.appendChild(mt1TextNode);
-                                        mt2Element.appendChild(mt2TextNode);
-                                        mt3Element.appendChild(mt3TextNode);
-                                }
-                        }
-                        s++;
-                }
-                Source source = new DOMSource(doc);
-
-                 //将XML源文件添加到模型中，以便XsltView能够检测
-                ModelAndView model = new ModelAndView("multiplication3");
-                model.addObject("xmlSource", source);
-
-                return model;
-                //TransformerFactory.newInstance().newTransformer().transform(new DOMSource(doc), new StreamResult(response.getOutputStream()));
         }
 
         /**
