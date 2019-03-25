@@ -4,7 +4,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Source;
+import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Controller;
@@ -23,7 +25,7 @@ import org.w3c.dom.Text;
 public class WelcomeController {
 
         /**
-         * 九九乘法表-xml 2019-3-24
+         * 九九乘法表-xml 2019-3-24 当前练习
          *
          * @return
          */
@@ -59,7 +61,7 @@ public class WelcomeController {
         }
 
         /**
-         * 九九乘法表-XML 获取String 转换成 XML 2019-3-24
+         * 九九乘法表-XML 2019-3-24 当前练习
          *
          * @return
          */
@@ -332,13 +334,15 @@ public class WelcomeController {
                         documentElement.appendChild(mtsElement);
                         JSONArray mtsArray = multiplicationArray.getJSONArray(i);
 
-                        for (int j = 0; j < 9; j++) {
-                                Element mtElement = doc.createElement("mt" + j);
-                                Element mt2Element = doc.createElement("mt1" + j);
-                                Element mt3Element = doc.createElement("mt2" + j);
-                                mtsElement.appendChild(mtElement);
-                                mtsElement.appendChild(mt2Element);
-                                mtsElement.appendChild(mt3Element);
+                        for (int j = 0; j < mtsArray.length(); j++) {
+                                Element msElement = doc.createElement("ms");
+                                mtsElement.appendChild(msElement);
+                                Element mtElement = doc.createElement("mt");
+                                Element mt2Element = doc.createElement("mt1");
+                                Element mt3Element = doc.createElement("mt2");
+                                msElement.appendChild(mtElement);
+                                msElement.appendChild(mt2Element);
+                                msElement.appendChild(mt3Element);
                                 if (s > j) {
                                         JSONObject mtObject = mtsArray.getJSONObject(j);
                                         Text mt1TextNode = doc.createTextNode(mtObject.get("mt1").toString());
@@ -352,8 +356,8 @@ public class WelcomeController {
                         s++;
                 }
                 Source source = new DOMSource(doc);
-//
-                // 将XML源文件添加到模型中，以便XsltView能够检测
+
+                 //将XML源文件添加到模型中，以便XsltView能够检测
                 ModelAndView model = new ModelAndView("multiplication3");
                 model.addObject("xmlSource", source);
 
