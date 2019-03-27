@@ -2,15 +2,22 @@ package com.bigbigmall.xiamen.controller;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.IntStream;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Controller;
@@ -216,8 +223,113 @@ public class WelcomeController {
 				array1.put(object);
 			}
 		}
-
 		String string = array.toString();
 		return string;
+	}
+
+	/**
+	 * http://192.168.101.8:31001/page/list/0/100
+	 */
+	@RequestMapping("/page")
+	@ResponseBody
+	public ModelAndView getPage(HttpServletResponse response) throws Exception {
+		//获取文档对象
+		DocumentBuilderFactory newInstance = DocumentBuilderFactory.newInstance();
+		DocumentBuilder newDocumentBuilder = newInstance.newDocumentBuilder();
+		Document doc = newDocumentBuilder.newDocument();
+
+		//创建根节点
+		Element documentElement = doc.createElement("document");
+		doc.appendChild(documentElement);
+
+		//创建路径
+		HttpGet httpGet = new HttpGet("http://192.168.101.8:31001/page/list/0/100");
+
+		//获取请求体
+		CloseableHttpResponse execute = HttpClients.createDefault().execute(httpGet);
+		HttpEntity entity = execute.getEntity();
+
+		if (entity != null) {
+			String string = EntityUtils.toString(entity, "UTF-8");
+
+			//获取数据
+			JSONArray array = new JSONObject(string).getJSONObject("queryResult").getJSONArray("list");
+
+			for (int i = 0; i < array.length(); i++) {
+				Element listElement = doc.createElement("list");
+				documentElement.appendChild(listElement);
+				JSONObject object = array.getJSONObject(i);
+				Iterator<String> keys = object.keys();
+				for (int j = 0; j < object.length(); j++) {
+					String next = keys.next();
+					Element nextElement = doc.createElement(next);
+					nextElement.appendChild(doc.createTextNode(object.get(next).toString()));
+					listElement.appendChild(nextElement);
+				}
+			}
+		}
+		Source source = new DOMSource(doc);
+		// 将XML源文件添加到模型中，以便XsltView能够检测
+		ModelAndView model = new ModelAndView("page");
+		model.addObject("xmlSource", source);
+
+		return model;
+		//TransformerFactory.newInstance().newTransformer().transform(new DOMSource(doc), new StreamResult(response.getOutputStream()));
+	}
+
+	/**
+	 * http://192.168.101.8:31001/template/list
+	 *
+	 * @param response
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping("/template")
+	@ResponseBody
+	public ModelAndView getTemplate(HttpServletResponse response) throws Exception {
+		//获取文档对象
+		DocumentBuilderFactory newInstance = DocumentBuilderFactory.newInstance();
+		DocumentBuilder newDocumentBuilder = newInstance.newDocumentBuilder();
+		Document doc = newDocumentBuilder.newDocument();
+
+		//创建根节点
+		Element documentElement = doc.createElement("document");
+		doc.appendChild(documentElement);
+
+		//创建连接
+		HttpGet httpGet = new HttpGet("http://192.168.101.8:31001/template/list");
+
+		//获取请求体
+		CloseableHttpResponse execute = HttpClients.createDefault().execute(httpGet);
+		HttpEntity entity = execute.getEntity();
+
+		if (entity != null) {
+			String string = EntityUtils.toString(entity, "UTF-8");
+
+			//获取数据
+			JSONArray array = new JSONObject(string).getJSONObject("queryResult").getJSONArray("list");
+
+			//循环
+			for (int i = 0; i < array.length(); i++) {
+				Element listElement = doc.createElement("list");
+				documentElement.appendChild(listElement);
+				JSONObject object = array.getJSONObject(i);
+				Iterator<String> keys = object.keys();
+
+				for (int j = 0; j < object.length(); j++) {
+					String next = keys.next();
+					Element nextElement = doc.createElement(next);
+					nextElement.appendChild(doc.createTextNode(object.get(next).toString()));
+					listElement.appendChild(nextElement);
+				}
+			}
+		}
+		Source source = new DOMSource(doc);
+		// 将XML源文件添加到模型中，以便XsltView能够检测
+		ModelAndView model = new ModelAndView("template");
+		model.addObject("xmlSource", source);
+
+		return model;
+		//TransformerFactory.newInstance().newTransformer().transform(new DOMSource(doc), new StreamResult(response.getOutputStream()));
 	}
 }
