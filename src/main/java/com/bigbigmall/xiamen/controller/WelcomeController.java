@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
@@ -332,4 +333,136 @@ public class WelcomeController {
 		return model;
 		//TransformerFactory.newInstance().newTransformer().transform(new DOMSource(doc), new StreamResult(response.getOutputStream()));
 	}
+
+	/**
+	 * http://192.168.101.8:31001/config/list
+	 *
+	 * @param response
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping("/config")
+	@ResponseBody
+	public ModelAndView getConfig(HttpServletResponse response) throws Exception {
+		//获取文档对象
+		DocumentBuilderFactory newInstance = DocumentBuilderFactory.newInstance();
+		DocumentBuilder newDocumentBuilder = newInstance.newDocumentBuilder();
+		Document doc = newDocumentBuilder.newDocument();
+
+		//创建根对象
+		Element documentElement = doc.createElement("document");
+		doc.appendChild(documentElement);
+
+		//创建连接
+		HttpGet httpGet = new HttpGet("http://192.168.101.8:31001/config/list");
+
+		//获取请求体
+		CloseableHttpResponse execute = HttpClients.createDefault().execute(httpGet);
+		HttpEntity entity = execute.getEntity();
+
+		if (entity != null) {
+
+			String string = EntityUtils.toString(entity, "UTF-8");
+
+			//获取数据
+			JSONArray array = new JSONArray(string);
+
+			//循环
+			for (int i = 0; i < array.length(); i++) {
+				Element listElement = doc.createElement("list");
+				documentElement.appendChild(listElement);
+				JSONObject object = array.getJSONObject(i);
+				Iterator<String> keys = object.keys();
+
+				for (int j = 0; j < object.length(); j++) {
+					String next = keys.next();
+					Element nextElement = doc.createElement(next);
+					nextElement.appendChild(doc.createTextNode(object.get(next).toString()));
+					listElement.appendChild(nextElement);
+				}
+			}
+		}
+		Source source = new DOMSource(doc);
+		// 将XML源文件添加到模型中，以便XsltView能够检测
+		ModelAndView model = new ModelAndView("config");
+		model.addObject("xmlSource", source);
+
+		return model;
+		//TransformerFactory.newInstance().newTransformer().transform(new DOMSource(doc), new StreamResult(response.getOutputStream()));
+	}
+
+	/**
+	 * http://192.168.101.8:31001/config/userList
+	 *
+	 * @param response
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping("/user")
+	@ResponseBody
+	public ModelAndView getUser(HttpServletResponse response) throws Exception {
+		//获取文档对象
+		DocumentBuilderFactory newInstance = DocumentBuilderFactory.newInstance();
+		DocumentBuilder newDocumentBuilder = newInstance.newDocumentBuilder();
+		Document doc = newDocumentBuilder.newDocument();
+
+		//获取根节点
+		Element documentElement = doc.createElement("document");
+		doc.appendChild(documentElement);
+
+		//创建连接
+		HttpGet httpGet = new HttpGet("http://192.168.101.8:31001/config/userList");
+
+		//获取请求体
+		CloseableHttpResponse execute = HttpClients.createDefault().execute(httpGet);
+		HttpEntity entity = execute.getEntity();
+
+		if (entity != null) {
+
+			String string = EntityUtils.toString(entity, "UTF-8");
+
+			JSONArray array = new JSONArray(string);
+			for (int i = 0; i < array.length(); i++) {
+				Element mtsElement = doc.createElement("mts");
+				documentElement.appendChild(mtsElement);
+				JSONObject object = array.getJSONObject(i);
+				Iterator<String> keys = object.keys();
+
+				for (int j = 0; j < object.length(); j++) {
+					String next = keys.next();
+
+					if (!"dvalue".equals(next)) {
+						Element nextElement = doc.createElement(next);
+						nextElement.appendChild(doc.createTextNode(object.get(next).toString()));
+						mtsElement.appendChild(nextElement);
+					}
+
+					if ("dvalue".equals(next)) {
+						JSONArray dvalueArray = object.getJSONArray(next);
+						for (int k = 0; k < dvalueArray.length(); k++) {
+							Element nextElement = doc.createElement(next);
+							mtsElement.appendChild(nextElement);
+							JSONObject dvalueObject = dvalueArray.getJSONObject(k);
+							Iterator<String> dvalueKeys = dvalueObject.keys();
+
+							while (dvalueKeys.hasNext()) {
+								String dvalueNext = dvalueKeys.next();
+								Element dvalueElement = doc.createElement(dvalueNext);
+								dvalueElement.appendChild(doc.createTextNode(dvalueObject.get(dvalueNext).toString()));
+								nextElement.appendChild(dvalueElement);
+							}
+						}
+					}
+				}
+			}
+		}
+		Source source = new DOMSource(doc);
+		// 将XML源文件添加到模型中，以便XsltView能够检测
+		ModelAndView model = new ModelAndView("user");
+		model.addObject("xmlSource", source);
+
+		return model;
+		//TransformerFactory.newInstance().newTransformer().transform(new DOMSource(doc), new StreamResult(response.getOutputStream()));
+	}
+
 }
