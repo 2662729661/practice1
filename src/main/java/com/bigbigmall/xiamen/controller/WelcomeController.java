@@ -74,9 +74,7 @@ public class WelcomeController {
 			JSONArray array = new JSONArray();
 			for (int j = s; j <= v; j++) {
 				JSONObject object = new JSONObject();
-				object.put("mt1", " " + j + " ");
-				object.put("mt2", i + " = ");
-				object.put("mt3", (i * j));
+				object.put("mt1", " " + j + " ").put("mt2", i + " = ").put("mt3", (i * j));
 				array.put(object);
 			}
 			list.add(array);
@@ -439,6 +437,7 @@ public class WelcomeController {
 
 					if ("dvalue".equals(next)) {
 						JSONArray dvalueArray = object.getJSONArray(next);
+						mtsElement.setAttribute("name", (dvalueArray.length()+1)+"");
 						for (int k = 0; k < dvalueArray.length(); k++) {
 							Element nextElement = doc.createElement(next);
 							mtsElement.appendChild(nextElement);
@@ -464,5 +463,4 @@ public class WelcomeController {
 		return model;
 		//TransformerFactory.newInstance().newTransformer().transform(new DOMSource(doc), new StreamResult(response.getOutputStream()));
 	}
-
 }

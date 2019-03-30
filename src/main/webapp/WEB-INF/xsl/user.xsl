@@ -4,14 +4,19 @@
 	<xsl:template match="/document">
 		<html>
 			<body>
-				<h2>测试3</h2>
+				<h2>九九乘法表</h2>
 				<table border="1">
 					<tbody>
 						<tr>
-							<th>dtype</th>
-							<th>id</th>
-							<th>dname</th>
-							<th colspan="12">dvalue</th>
+							<th rowspan="2">dtype</th>
+							<th rowspan="2">id</th>
+							<th rowspan="2">dname</th>
+							<th colspan="3">dvalue</th>
+						</tr>
+						<tr>
+							<th>sdId</th> 
+							<th>sdStatus</th> 
+							<th>sdName</th>
 						</tr>
 						<xsl:apply-templates select="mts"/>
 					</tbody>
@@ -21,27 +26,29 @@
 	</xsl:template>
 	<xsl:template match="mts">
 		<tr>
-			<td>
+			<td rowspan="{@name}">
 				<xsl:value-of select="dtype"/>
 			</td>
-			<td>
+			<td rowspan="{@name}">
 				<xsl:value-of select="id"/>
 			</td>
-			<td>
+			<td rowspan="{@name}">
 				<xsl:value-of select="dname"/>
 			</td>
-			<xsl:apply-templates select="dvalue"/>
 		</tr>
+		<xsl:apply-templates select="dvalue"/>
 	</xsl:template>
 	<xsl:template match="dvalue">
-		<td>
-			<xsl:value-of select="sdId"/>
-		</td>
-		<td>
-			<xsl:value-of select="sdStatus"/>
-		</td>
-		<td>
-			<xsl:value-of select="sdName"/>
-		</td>
+		<tr>
+			<td>
+				<xsl:value-of select="sdId"/>
+			</td>
+			<td>
+				<xsl:value-of select="sdStatus"/>
+			</td>
+			<td>
+				<xsl:value-of select="sdName"/>
+			</td>
+		</tr>
 	</xsl:template>
 </xsl:stylesheet>
