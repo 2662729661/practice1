@@ -4,7 +4,7 @@
 	<xsl:template match="/document">
 		<html>
 			<body>
-				<h2>九九乘法表</h2>
+				<h2>测试4</h2>
 				<table border="1">
 					<tbody>
 						<tr>

@@ -142,6 +142,7 @@ public class WelcomeController {
 		//TransformerFactory.newInstance().newTransformer().transform(new DOMSource(doc), new StreamResult(new File("C:\\netBensJmvn/a.xml")));
 	}
 
+	/*---------------------------------------------------------------------------------------------*/
 	/**
 	 * 求两数区间的素数-前端页面调用 2019-3-20
 	 *
@@ -179,6 +180,7 @@ public class WelcomeController {
 		return "Incorrect parameters";
 	}
 
+	/*---------------------------------------------------------------------------------------------*/
 	/**
 	 * 九九乘法表-前端页面调用 2019-3-21
 	 *
@@ -204,6 +206,7 @@ public class WelcomeController {
 		return toString;
 	}
 
+	/*---------------------------------------------------------------------------------------------*/
 	/**
 	 * 九九乘法表4 2019-3-21
 	 *
@@ -226,6 +229,7 @@ public class WelcomeController {
 		return string;
 	}
 
+	/*---------------------------------------------------------------------------------------------*/
 	/**
 	 * http://192.168.101.8:31001/page/list/0/100
 	 */
@@ -276,6 +280,7 @@ public class WelcomeController {
 		//TransformerFactory.newInstance().newTransformer().transform(new DOMSource(doc), new StreamResult(response.getOutputStream()));
 	}
 
+	/*---------------------------------------------------------------------------------------------*/
 	/**
 	 * http://192.168.101.8:31001/template/list
 	 *
@@ -332,6 +337,7 @@ public class WelcomeController {
 		//TransformerFactory.newInstance().newTransformer().transform(new DOMSource(doc), new StreamResult(response.getOutputStream()));
 	}
 
+	/*---------------------------------------------------------------------------------------------*/
 	/**
 	 * http://192.168.101.8:31001/config/list
 	 *
@@ -389,6 +395,7 @@ public class WelcomeController {
 		//TransformerFactory.newInstance().newTransformer().transform(new DOMSource(doc), new StreamResult(response.getOutputStream()));
 	}
 
+	/*---------------------------------------------------------------------------------------------*/
 	/**
 	 * http://192.168.101.8:31001/config/userList
 	 *
@@ -437,7 +444,7 @@ public class WelcomeController {
 
 					if ("dvalue".equals(next)) {
 						JSONArray dvalueArray = object.getJSONArray(next);
-						mtsElement.setAttribute("name", (dvalueArray.length()+1)+"");
+						mtsElement.setAttribute("name", (dvalueArray.length() + 1) + "");
 						for (int k = 0; k < dvalueArray.length(); k++) {
 							Element nextElement = doc.createElement(next);
 							mtsElement.appendChild(nextElement);
@@ -463,4 +470,111 @@ public class WelcomeController {
 		return model;
 		//TransformerFactory.newInstance().newTransformer().transform(new DOMSource(doc), new StreamResult(response.getOutputStream()));
 	}
+
+	/*---------------------------------------------------------------------------------------------*/
+	//生成数据
+	public JSONArray getArray() {
+		JSONArray array = new JSONArray();
+		for (int i = 1; i < 10; i++) {
+			JSONArray array2 = new JSONArray();
+			array.put(array2);
+			for (int j = 1; j <= i; j++) {
+				JSONObject object = new JSONObject();
+				object.put("key1", i).put("key2", j).put("key3", (i * j));
+				array2.put(object);
+			}
+		}
+		return array;
+	}
+
+	@RequestMapping("/jjcfb")
+	@ResponseBody
+	public ModelAndView getXml(HttpServletResponse response) throws Exception {
+		//获取文档对象
+		DocumentBuilderFactory newInstance = DocumentBuilderFactory.newInstance();
+		DocumentBuilder newDocumentBuilder = newInstance.newDocumentBuilder();
+		Document doc = newDocumentBuilder.newDocument();
+
+		//创建根节点
+		Element documentElement = doc.createElement("document");
+		doc.appendChild(documentElement);
+
+		//获取数据
+		JSONArray array = getArray();
+
+		//循环
+		for (int i = 0; i < array.length(); i++) {
+			getDocument(array, documentElement, doc, i, 1);
+		}
+
+		//添加中间隔离区
+		Element mtsElement = doc.createElement("mts");
+		Element msElement = doc.createElement("ms");
+		msElement.setAttribute("name", "10");
+		mtsElement.appendChild(msElement);
+		documentElement.appendChild(mtsElement);
+
+		//循环
+		for (int i = array.length() - 1; i >= 0; i--) {
+			getDocument(array, documentElement, doc, i, 2);
+		}
+
+		Source source = new DOMSource(doc);
+		// 将XML源文件添加到模型中，以便XsltView能够检测
+		ModelAndView model = new ModelAndView("jjcfb");
+		model.addObject("xmlSource", source);
+
+		return model;
+		//TransformerFactory.newInstance().newTransformer().transform(new DOMSource(doc), new StreamResult(response.getOutputStream()));
+	}
+
+	//获取document
+	public void getDocument(JSONArray array, Element documentElement, Document doc, int s, int w) {
+		Element mtsElement = doc.createElement("mts");
+		documentElement.appendChild(mtsElement);
+		JSONArray array2 = array.getJSONArray(s);
+
+		if (w == 1) {
+			for (int j = 0; j < array2.length(); j++) {
+				JSONObject object = array2.getJSONObject(j);
+				Element msElement = getElement(object, doc, 1);
+				mtsElement.appendChild(msElement);
+			}
+			Element msElement = doc.createElement("ms");
+			msElement.setAttribute("name", (9 - s) + "");
+			mtsElement.appendChild(msElement);
+		} else {
+			Element mssElement = doc.createElement("ms");
+			mssElement.setAttribute("name", (9 - s) + "");
+			mtsElement.appendChild(mssElement);
+			for (int j = array2.length() - 1; j >= 0; j--) {
+				JSONObject object = array2.getJSONObject(j);
+				Element msElement = getElement(object, doc, 2);
+				mtsElement.appendChild(msElement);
+			}
+		}
+
+	}
+
+	//获取数据
+	public Element getElement(JSONObject object, Document doc, int i) {
+		Element msElement = doc.createElement("ms");
+		if (i == 2) {
+			msElement.setAttribute("value", "");
+		}
+
+		Element key1Element = doc.createElement("key1");
+		key1Element.appendChild(doc.createTextNode(object.get("key1").toString()));
+		msElement.appendChild(key1Element);
+		Element key2Element = doc.createElement("key2");
+		key2Element.appendChild(doc.createTextNode(object.get("key2").toString()));
+		msElement.appendChild(key2Element);
+		Element key3Element = doc.createElement("key3");
+		key3Element.appendChild(doc.createTextNode(object.get("key3").toString()));
+		msElement.appendChild(key3Element);
+		return msElement;
+	}
+	/*------------------------------------------------------------------------------------*/
+	
+	
 }
