@@ -12,6 +12,10 @@ app.service("tableService", function ($http) {
 	this.getRecordSheet = function () {
                 return $http.get("recordSheet");
         };
+	//arr
+	this.getArr = function (nid) {
+                return $http.get("getArr?nid="+nid);
+        };
 
 });
 

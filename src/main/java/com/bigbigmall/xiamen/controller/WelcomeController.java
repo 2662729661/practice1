@@ -1,6 +1,7 @@
 package com.bigbigmall.xiamen.controller;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -575,6 +576,21 @@ public class WelcomeController {
 		return msElement;
 	}
 	/*------------------------------------------------------------------------------------*/
-	
-	
+
+	@RequestMapping("/getArr")
+	@ResponseBody
+	public String getArr(String nid) throws IOException{
+		//创建连接
+		HttpGet httpGet = new HttpGet("http://192.168.101.8:31001/config/arr?nid="+nid);
+		
+		//获取请求体
+		CloseableHttpResponse execute = HttpClients.createDefault().execute(httpGet);
+		HttpEntity entity = execute.getEntity();
+		
+		if (entity != null) {
+			String string = EntityUtils.toString(entity,"UTF-8");
+			return string;
+		}
+		return null;
+	}
 }

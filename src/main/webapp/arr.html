@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<title>TODO supply a title</title>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<script type="text/javascript" src="js/angular.min.js"></script>
+                <script type="text/javascript" src="js/base.js"></script>
+                <script type="text/javascript" src="js/service/arrService.js"></script>
+                <script type="text/javascript" src="js/controller/arrController.js"></script>
+	</head>
+	<body ng-app="xiamen" ng-controller="arrController" ng-init="getArr()">
+		<select ng-model="entity.id1" ng-options="li.id as li.name for li in arrList" ></select>
+
+		<select ng-model="entity.id2" ng-options="li2.id as li2.name for li2 in arrList2" ng-hide="{{arrIs2}}"></select>
+
+		<select ng-model="entity.id3" ng-options="li3.id as li3.name for li3 in arrList3" ng-hide="{{arrIs3}}"></select>
+	</body>
+</html>
