@@ -13,8 +13,8 @@
 	<body ng-app="xiamen" ng-controller="arrController" ng-init="getArr()">
 		<select ng-model="entity.id1" ng-options="li.id as li.name for li in arrList" ></select>
 
-		<select ng-model="entity.id2" ng-options="li2.id as li2.name for li2 in arrList2" ng-hide="{{arrIs2}}"></select>
+		<select ng-model="entity.id2" ng-options="li2.id as li2.name for li2 in arrList2" ></select>
 
-		<select ng-model="entity.id3" ng-options="li3.id as li3.name for li3 in arrList3" ng-hide="{{arrIs3}}"></select>
+		<select ng-model="entity.id3" ng-options="li3.id as li3.name for li3 in arrList3" ></select>
 	</body>
 </html>

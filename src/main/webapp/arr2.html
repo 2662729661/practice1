@@ -18,21 +18,26 @@ and open the template in the editor.
 		<script>
 			$(document).ready(function () {
 				//第一层
-				$.post("getArr", {"nid": "0"}, function (data) {
+				getOption("0","#s1");
+			});
+			//获取数据
+			function getOption(nid,id){
+				$.post("getArr", {"nid": nid}, function (data) {
 					var s1 = JSON.parse(data);
 					for (var i = 0; i < s1.length; i++) {
 						var op = document.createElement("option");
 						$(op).text(s1[i]["name"]);
 						op.setAttribute("value", s1[i]["id"]);
-						$("#s1").append(op);
+						$(id).append(op);
 					}
 				});
-			});
+			}
 			//创建变量集合
 			var aa = {"a1": "", "a2": ""};
 			//调用方法,删除数据,修改a1的值
 			function www() {
 				$("#s2").empty();
+				$("#s3").empty();
 				aa.a1 = $('#s1 option:selected').val();
 			}
 			//调用方法,删除数据,修改a2的值
@@ -43,29 +48,13 @@ and open the template in the editor.
 			//第二层
 			Object.defineProperty(aa, "a1", {
 				set: function (value) {
-					$.post("getArr", {"nid": value}, function (data) {
-						var s1 = JSON.parse(data);
-						for (var i = 0; i < s1.length; i++) {
-							var op = document.createElement("option");
-							$(op).text(s1[i]["name"]);
-							op.setAttribute("value", s1[i]["id"]);
-							$("#s2").append(op);
-						}
-					});
+					getOption(value,"#s2");
 				}
 			});
 			//第三层
 			Object.defineProperty(aa, "a2", {
 				set: function (value) {
-					$.post("getArr", {"nid": value}, function (data) {
-						var s1 = JSON.parse(data);
-						for (var i = 0; i < s1.length; i++) {
-							var op = document.createElement("option");
-							$(op).text(s1[i]["name"]);
-							op.setAttribute("value", s1[i]["id"]);
-							$("#s3").append(op);
-						}
-					});
+					getOption(value,"#s3");
 				}
 			});
 
