@@ -12,8 +12,8 @@ and open the template in the editor.
 		<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
 	</head>
 	<body>
-		<select id="s1" onchange="www(this)"></select>
-		<select id="s2" onchange="www2(this)"></select>
+		<select id="s1" onchange="getId()"></select>
+		<select id="s2" onchange="getId2()"></select>
 		<select id="s3"></select>
 		<script>
 			$(document).ready(function () {
@@ -23,11 +23,13 @@ and open the template in the editor.
 			//获取数据
 			function getOption(nid,id){
 				$.post("getArr", {"nid": nid}, function (data) {
-					var s1 = JSON.parse(data);
-					for (var i = 0; i < s1.length; i++) {
+					var ops = document.createElement("option");
+					$(id).append(ops);
+					var arr = JSON.parse(data);
+					for (var i = 0; i < arr.length; i++) {
 						var op = document.createElement("option");
-						$(op).text(s1[i]["name"]);
-						op.setAttribute("value", s1[i]["id"]);
+						$(op).text(arr[i]["name"]);
+						op.setAttribute("value", arr[i]["id"]);
 						$(id).append(op);
 					}
 				});
@@ -35,15 +37,15 @@ and open the template in the editor.
 			//创建变量集合
 			var aa = {"a1": "", "a2": ""};
 			//调用方法,删除数据,修改a1的值
-			function www() {
+			function getId() {
 				$("#s2").empty();
 				$("#s3").empty();
-				aa.a1 = $('#s1 option:selected').val();
+				aa.a1 = $("#s1 option:selected").val();
 			}
 			//调用方法,删除数据,修改a2的值
-			function www2() {
+			function getId2() {
 				$("#s3").empty();
-				aa.a2 = $('#s2 option:selected').val();
+				aa.a2 = $("#s2 option:selected").val();
 			}
 			//第二层
 			Object.defineProperty(aa, "a1", {
