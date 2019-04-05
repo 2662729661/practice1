@@ -2,10 +2,7 @@ package com.bigbigmall.xiamen.controller;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
-import java.util.stream.IntStream;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -37,60 +34,61 @@ import org.w3c.dom.Element;
 public class WelcomeController {
 
 	/**
-	 * 九九乘法表-xml 2019-3-24 当前练习
-	 *
-	 * @return
+	 * 2019-4-4 个人页面
+	 * https://redan-api.herokuapp.com/personnels/search/findOneById?id=3
 	 */
-	@RequestMapping("/multiplicationXml")
+	@RequestMapping("/personal2")
 	@ResponseBody
-	public JSONArray getMultiplicationTableXML() {
-		JSONArray array = new JSONArray();
+	public ModelAndView getPersonal2(HttpServletResponse response) throws Exception {
+		//获取文档对象
+		DocumentBuilderFactory newInstance = DocumentBuilderFactory.newInstance();
+		DocumentBuilder newDocumentBuilder = newInstance.newDocumentBuilder();
+		Document doc = newDocumentBuilder.newDocument();
 
-		//获取2-5的值
-		List<JSONArray> list = getArray(2, 5);
-		for (int i = 0; i < list.size(); i++) {
-			array.put(list.get(i));
-		}
+		//创建根节点
+		Element documentElement = doc.createElement("document");
+		doc.appendChild(documentElement);
 
-		//获取6-9的值
-		List<JSONArray> list2 = getArray(6, 9);
-		for (int i = 0; i < list2.size(); i++) {
-			array.put(list2.get(i));
-		}
+		//创建连接
+		HttpGet httpGet = new HttpGet("https://redan-api.herokuapp.com/personnels/search/findOneById?id=3");
 
-		return array;
-	}
+		//获取请求体
+		CloseableHttpResponse execute = HttpClients.createDefault().execute(httpGet);
+		HttpEntity entity = execute.getEntity();
 
-	/**
-	 * 获取九九乘法表数据
-	 *
-	 * @param s 开始值
-	 * @param v 结束值
-	 * @return 返回集合
-	 */
-	public List<JSONArray> getArray(int s, int v) {
-		List<JSONArray> list = new ArrayList<>();
+		if (entity != null) {
+			String string = EntityUtils.toString(entity, "UTF-8");
 
-		for (int i = 1; i <= 9; i++) {
-			JSONArray array = new JSONArray();
-			for (int j = s; j <= v; j++) {
-				JSONObject object = new JSONObject();
-				object.put("mt1", " " + j + " ").put("mt2", i + " = ").put("mt3", (i * j));
-				array.put(object);
+			JSONObject object = new JSONObject(string);
+			Iterator<String> keys = object.keys();
+			for (int i = 0; i < object.length(); i++) {
+				String next = keys.next();
+				Element nextElement = doc.createElement(next);
+				documentElement.appendChild(nextElement);
+				if ("coverImgUrl".equals(next) || "profileImgUrl".equals(next)) {
+					nextElement.setAttribute("text", object.get(next).toString());
+				}
+				if ("nickname".equals(next) || "universallyUniqueIdentifier".equals(next) || "id".equals(next)) {
+					nextElement.appendChild(doc.createTextNode(object.get(next).toString()));
+				}
 			}
-			list.add(array);
 		}
-		return list;
+		Source source = new DOMSource(doc);
+		// 将XML源文件添加到模型中，以便XsltView能够检测
+		ModelAndView model = new ModelAndView("personal2");
+		model.addObject("xmlSource", source);
+
+		return model;
+		//TransformerFactory.newInstance().newTransformer().transform(new DOMSource(doc), new StreamResult(response.getOutputStream()));
 	}
 
+	/*------------------------------------------------------------------------------------*/
 	/**
-	 * 九九乘法表-XML 2019-3-24 当前练习
-	 *
-	 * @return
+	 * 2019-4-3 xsl t 显示页面
 	 */
-	@RequestMapping("/tableXML")
+	@RequestMapping("/personalPage")
 	@ResponseBody
-	public ModelAndView getMultiplicationXml(HttpServletResponse response) throws Exception {
+	public ModelAndView getPersonalPage(HttpServletResponse response) throws Exception {
 		//获取文档对象
 		DocumentBuilderFactory newInstance = DocumentBuilderFactory.newInstance();
 		DocumentBuilder newDocumentBuilder = newInstance.newDocumentBuilder();
@@ -101,496 +99,173 @@ public class WelcomeController {
 		doc.appendChild(documentElement);
 
 		//获取数据
-		JSONArray mtArray = getMultiplicationTableXML();
+		JSONArray personalPageArray = getPersonalPageArray();
 
-		//循环添加
-		for (int i = 0; i < mtArray.length(); i++) {
-			Element mtsElement = doc.createElement("mts");
-			documentElement.appendChild(mtsElement);
-			JSONArray array = mtArray.getJSONArray(i);
+		for (int i = 0; i < personalPageArray.length(); i++) {
+			//对象
+			JSONObject object = personalPageArray.getJSONObject(i);
+			String next = object.keys().next();
+
+			//标签
+			Element nextElement = doc.createElement(next);
+			documentElement.appendChild(nextElement);
+			if (!"commodity".equals(next)) {
+				//文本
+				nextElement.appendChild(doc.createTextNode(object.get(next).toString()));
+			}
+			if ("commodity".equals(next)) {
+				//array
+				JSONArray commodityArray = object.getJSONArray(next);
+				getObj(commodityArray, doc, nextElement);
+			}
+
+		}
+		Source source = new DOMSource(doc);
+		// 将XML源文件添加到模型中，以便XsltView能够检测
+		ModelAndView model = new ModelAndView("personal");
+		model.addObject("xmlSource", source);
+
+		return model;
+		//TransformerFactory.newInstance().newTransformer().transform(new DOMSource(doc), new StreamResult(response.getOutputStream()));
+	}
+
+	public void getObj(JSONArray commodityArray, Document doc, Element nextElement) {
+
+		for (int i = 0; i < commodityArray.length(); i++) {
+			Element columnElement = doc.createElement("column");
+			nextElement.appendChild(columnElement);
+			JSONObject object = commodityArray.getJSONObject(i);
+			Element hrefElement = doc.createElement("href");
+			hrefElement.appendChild(doc.createTextNode(object.get("href").toString()));
+			columnElement.appendChild(hrefElement);
+			Element srcElement = doc.createElement("src");
+			srcElement.appendChild(doc.createTextNode(object.get("src").toString()));
+			columnElement.appendChild(srcElement);
+		}
+	}
+
+	//生成数据
+	@RequestMapping("/personalPageArray")
+	@ResponseBody
+	public JSONArray getPersonalPageArray() {
+		JSONArray array = new JSONArray();
+		array.put(new JSONObject().put("tracker", "320"));
+		array.put(new JSONObject().put("postscript", "320"));
+		array.put(new JSONObject().put("tracking", "320"));
+		array.put(new JSONObject().put("name", "Redan"));
+		array.put(new JSONObject().put("situation", "明星賣家"));
+		array.put(new JSONObject().put("introduce",
+			"Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod\n"
+			+ "tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,\n"
+			+ "quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo\n"
+			+ "consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse\n"
+			+ "cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non\n"
+			+ "proident, sunt in culpa qui officia deserunt mollit anim id est laborum."));
+
+		array.put(new JSONObject().put("commodity", getArr()));
+		array.put(new JSONObject().put("commodity", getArr()));
+		return array;
+	}
+
+	public JSONArray getArr() {
+		JSONArray array = new JSONArray();
+		for (int i = 0; i < 3; i++) {
+			JSONObject object = new JSONObject();
+			object.put("href", "#").put("src", "https://via.placeholder.com/180");
+			array.put(object);
+		}
+		return array;
+	}
+
+	/*------------------------------------------------------------------------------------*/
+	/**
+	 * 测试10
+	 *
+	 * @param nid
+	 * @return
+	 * @throws IOException
+	 */
+	@RequestMapping("/personalPage2")
+	@ResponseBody
+	public ModelAndView getPersonalPage2() throws Exception {
+		//创建文档对象
+		DocumentBuilderFactory newInstance = DocumentBuilderFactory.newInstance();
+		DocumentBuilder newDocumentBuilder = newInstance.newDocumentBuilder();
+		Document doc = newDocumentBuilder.newDocument();
+
+		//创建根标签
+		Element documentElement = doc.createElement("document");
+		doc.appendChild(documentElement);
+
+		JSONArray personalPageArray = getPersonalPageArray2();
+
+		for (int i = 0; i < personalPageArray.length(); i++) {
+			Element arElement = null;
+			if (i == 0) {
+				arElement = doc.createElement("ar");
+			} else {
+				arElement = doc.createElement("ax");
+			}
+			documentElement.appendChild(arElement);
+			JSONArray array = personalPageArray.getJSONArray(i);
 
 			for (int j = 0; j < array.length(); j++) {
-				Element msElement = doc.createElement("ms");
-				mtsElement.appendChild(msElement);
-				//添加乘数
-				Element mtElement = doc.createElement("mt1");
-				//添加被乘数
-				Element mt2Element = doc.createElement("mt2");
-				//添加积
-				Element mt3Element = doc.createElement("mt3");
-				msElement.appendChild(mtElement);
-				msElement.appendChild(mt2Element);
-				msElement.appendChild(mt3Element);
+				Element divsElement = doc.createElement("divs");
+				arElement.appendChild(divsElement);
 				JSONObject object = array.getJSONObject(j);
-				//判断是否是素数
-				String mt3 = object.get("mt3").toString();
-				if ("2".equals(mt3) || "3".equals(mt3) || "5".equals(mt3) || "7".equals(mt3)) {
-					mt3Element.setAttribute("name", "");
-				}
-				mtElement.appendChild(doc.createTextNode(object.get("mt1").toString()));
-				mt2Element.appendChild(doc.createTextNode(object.get("mt2").toString()));
-				mt3Element.appendChild(doc.createTextNode(mt3));
 
+				Element div1Element = doc.createElement("div1");
+				div1Element.appendChild(doc.createTextNode(object.get("div1").toString()));
+				divsElement.appendChild(div1Element);
+				Element div2Element = doc.createElement("div2");
+				div2Element.appendChild(doc.createTextNode(object.get("div2").toString()));
+				divsElement.appendChild(div2Element);
+				Element class1Element = doc.createElement("class1");
+				class1Element.appendChild(doc.createTextNode(object.get("class1").toString()));
+				divsElement.appendChild(class1Element);
+				Element class2Element = doc.createElement("class2");
+				class2Element.appendChild(doc.createTextNode(object.get("class2").toString()));
+				divsElement.appendChild(class2Element);
 			}
 		}
 
 		Source source = new DOMSource(doc);
 		// 将XML源文件添加到模型中，以便XsltView能够检测
-		ModelAndView model = new ModelAndView("multiplication");
+		ModelAndView model = new ModelAndView("personalPage");
 		model.addObject("xmlSource", source);
 
 		return model;
-		//TransformerFactory.newInstance().newTransformer().transform(new DOMSource(doc), new StreamResult(new File("C:\\netBensJmvn/a.xml")));
+		//TransformerFactory.newInstance().newTransformer().transform(new DOMSource(doc), new StreamResult(response.getOutputStream()));
 	}
 
-	/*---------------------------------------------------------------------------------------------*/
-	/**
-	 * 求两数区间的素数-前端页面调用 2019-3-20
-	 *
-	 * @param minimum
-	 * @param maximum
-	 * @return
-	 */
-	@RequestMapping("/primeNumbers")
-	@ResponseBody
-	public String getPrimeNumbers(int minimum, int maximum) {
-		if (minimum > 0 && maximum > 0 && maximum > minimum) {
-
-			String max = "";
-			for (int i = minimum; i <= maximum; i++) {
-				if (i == 1) {
-					continue;
-				}
-				if (i == 2) {
-					max += i + "  ";
-					continue;
-				}
-
-				for (int j = 2; j < i; j++) {
-					if (i % j == 0) {
-						break;
-					}
-					if ((j + 1) == i) {
-						max += i + "  ";
-					}
-				}
-			}
-			System.out.println("max:" + max);
-			return max;
-		}
-		return "Incorrect parameters";
-	}
-
-	/*---------------------------------------------------------------------------------------------*/
-	/**
-	 * 九九乘法表-前端页面调用 2019-3-21
-	 *
-	 * @return
-	 */
-	@RequestMapping("/multiplication")
-	@ResponseBody
-	public String getMultiplicationTable() {
-
+	public JSONArray getPersonalPageArray2() {
 		JSONArray array = new JSONArray();
-		for (int i = 2; i <= 9; i++) {
-			for (int j = 1; j <= 9; j++) {
-				JSONObject object = new JSONObject();
-				if ((i == 2 || i == 3 || i == 5 || i == 7) && j == 1) {
-					object.put(i + "", (i + "&#215;" + j + "=" + "<font color='red'>" + (i * j) + "</font>"));
-				} else {
-					object.put(i + "", (i + "&#215;" + j + "=" + (i * j)));
-				}
-				array.put(object);
-			}
-		}
-		String toString = array.toString();
-		return toString;
-	}
 
-	/*---------------------------------------------------------------------------------------------*/
-	/**
-	 * 九九乘法表4 2019-3-21
-	 *
-	 * @return
-	 */
-	@RequestMapping("/multiplication4")
-	@ResponseBody
-	public String getMultiplication4() {
-		JSONArray array = new JSONArray();
-		for (int i = 1; i < 10; i++) {
-			JSONArray array1 = new JSONArray();
-			array.put(array1);
-			for (int j = 1; j < 10; j++) {
-				JSONObject object = new JSONObject();
-				object.put("name", i + "*" + j + "=" + (i * j));
-				array1.put(object);
-			}
-		}
-		String string = array.toString();
-		return string;
-	}
+		JSONArray arrayAr = new JSONArray();
+		array.put(arrayAr);
+		arrayAr.put(getObject("ID", "509230671", "col-md-2", "col-md-6"));
+		arrayAr.put(getObject("姓名", "莊瑞生", "col-md-2", "col-md-6"));
+		arrayAr.put(getObject("Email", "redan@gmail.com", "col-md-2", "col-md-6"));
+		arrayAr.put(getObject("手機", "12345678", "col-md-2", "col-md-6"));
+		arrayAr.put(getObject("專業", "明星賣家", "col-md-2", "col-md-6"));
 
-	/*---------------------------------------------------------------------------------------------*/
-	/**
-	 * http://192.168.101.8:31001/page/list/0/100
-	 */
-	@RequestMapping("/page")
-	@ResponseBody
-	public ModelAndView getPage(HttpServletResponse response) throws Exception {
-		//获取文档对象
-		DocumentBuilderFactory newInstance = DocumentBuilderFactory.newInstance();
-		DocumentBuilder newDocumentBuilder = newInstance.newDocumentBuilder();
-		Document doc = newDocumentBuilder.newDocument();
+		JSONArray arrayAx = new JSONArray();
+		array.put(arrayAx);
+		arrayAx.put(getObject("Experience", "Expert", "col-md-6", "col-md-6"));
+		arrayAx.put(getObject("Hourly Rate", "10$/hr", "col-md-6", "col-md-6"));
+		arrayAx.put(getObject("Total Projects", "230", "col-md-6", "col-md-6"));
+		arrayAx.put(getObject("English Level", "Expert", "col-md-6", "col-md-6"));
+		arrayAx.put(getObject("Availability", "6 months", "col-md-6", "col-md-6"));
 
-		//创建根节点
-		Element documentElement = doc.createElement("document");
-		doc.appendChild(documentElement);
-
-		//创建路径
-		HttpGet httpGet = new HttpGet("http://192.168.101.8:31001/page/list/0/100");
-
-		//获取请求体
-		CloseableHttpResponse execute = HttpClients.createDefault().execute(httpGet);
-		HttpEntity entity = execute.getEntity();
-
-		if (entity != null) {
-			String string = EntityUtils.toString(entity, "UTF-8");
-
-			//获取数据
-			JSONArray array = new JSONObject(string).getJSONObject("queryResult").getJSONArray("list");
-
-			for (int i = 0; i < array.length(); i++) {
-				Element listElement = doc.createElement("list");
-				documentElement.appendChild(listElement);
-				JSONObject object = array.getJSONObject(i);
-				Iterator<String> keys = object.keys();
-				for (int j = 0; j < object.length(); j++) {
-					String next = keys.next();
-					Element nextElement = doc.createElement(next);
-					nextElement.appendChild(doc.createTextNode(object.get(next).toString()));
-					listElement.appendChild(nextElement);
-				}
-			}
-		}
-		Source source = new DOMSource(doc);
-		// 将XML源文件添加到模型中，以便XsltView能够检测
-		ModelAndView model = new ModelAndView("page");
-		model.addObject("xmlSource", source);
-
-		return model;
-		//TransformerFactory.newInstance().newTransformer().transform(new DOMSource(doc), new StreamResult(response.getOutputStream()));
-	}
-
-	/*---------------------------------------------------------------------------------------------*/
-	/**
-	 * http://192.168.101.8:31001/template/list
-	 *
-	 * @param response
-	 * @return
-	 * @throws Exception
-	 */
-	@RequestMapping("/template")
-	@ResponseBody
-	public ModelAndView getTemplate(HttpServletResponse response) throws Exception {
-		//获取文档对象
-		DocumentBuilderFactory newInstance = DocumentBuilderFactory.newInstance();
-		DocumentBuilder newDocumentBuilder = newInstance.newDocumentBuilder();
-		Document doc = newDocumentBuilder.newDocument();
-
-		//创建根节点
-		Element documentElement = doc.createElement("document");
-		doc.appendChild(documentElement);
-
-		//创建连接
-		HttpGet httpGet = new HttpGet("http://192.168.101.8:31001/template/list");
-
-		//获取请求体
-		CloseableHttpResponse execute = HttpClients.createDefault().execute(httpGet);
-		HttpEntity entity = execute.getEntity();
-
-		if (entity != null) {
-			String string = EntityUtils.toString(entity, "UTF-8");
-
-			//获取数据
-			JSONArray array = new JSONObject(string).getJSONObject("queryResult").getJSONArray("list");
-
-			//循环
-			for (int i = 0; i < array.length(); i++) {
-				Element listElement = doc.createElement("list");
-				documentElement.appendChild(listElement);
-				JSONObject object = array.getJSONObject(i);
-				Iterator<String> keys = object.keys();
-
-				for (int j = 0; j < object.length(); j++) {
-					String next = keys.next();
-					Element nextElement = doc.createElement(next);
-					nextElement.appendChild(doc.createTextNode(object.get(next).toString()));
-					listElement.appendChild(nextElement);
-				}
-			}
-		}
-		Source source = new DOMSource(doc);
-		// 将XML源文件添加到模型中，以便XsltView能够检测
-		ModelAndView model = new ModelAndView("template");
-		model.addObject("xmlSource", source);
-
-		return model;
-		//TransformerFactory.newInstance().newTransformer().transform(new DOMSource(doc), new StreamResult(response.getOutputStream()));
-	}
-
-	/*---------------------------------------------------------------------------------------------*/
-	/**
-	 * http://192.168.101.8:31001/config/list
-	 *
-	 * @param response
-	 * @return
-	 * @throws Exception
-	 */
-	@RequestMapping("/config")
-	@ResponseBody
-	public ModelAndView getConfig(HttpServletResponse response) throws Exception {
-		//获取文档对象
-		DocumentBuilderFactory newInstance = DocumentBuilderFactory.newInstance();
-		DocumentBuilder newDocumentBuilder = newInstance.newDocumentBuilder();
-		Document doc = newDocumentBuilder.newDocument();
-
-		//创建根对象
-		Element documentElement = doc.createElement("document");
-		doc.appendChild(documentElement);
-
-		//创建连接
-		HttpGet httpGet = new HttpGet("http://192.168.101.8:31001/config/list");
-
-		//获取请求体
-		CloseableHttpResponse execute = HttpClients.createDefault().execute(httpGet);
-		HttpEntity entity = execute.getEntity();
-
-		if (entity != null) {
-
-			String string = EntityUtils.toString(entity, "UTF-8");
-
-			//获取数据
-			JSONArray array = new JSONArray(string);
-
-			//循环
-			for (int i = 0; i < array.length(); i++) {
-				Element listElement = doc.createElement("list");
-				documentElement.appendChild(listElement);
-				JSONObject object = array.getJSONObject(i);
-				Iterator<String> keys = object.keys();
-
-				for (int j = 0; j < object.length(); j++) {
-					String next = keys.next();
-					Element nextElement = doc.createElement(next);
-					nextElement.appendChild(doc.createTextNode(object.get(next).toString()));
-					listElement.appendChild(nextElement);
-				}
-			}
-		}
-		Source source = new DOMSource(doc);
-		// 将XML源文件添加到模型中，以便XsltView能够检测
-		ModelAndView model = new ModelAndView("config");
-		model.addObject("xmlSource", source);
-
-		return model;
-		//TransformerFactory.newInstance().newTransformer().transform(new DOMSource(doc), new StreamResult(response.getOutputStream()));
-	}
-
-	/*---------------------------------------------------------------------------------------------*/
-	/**
-	 * http://192.168.101.8:31001/config/userList
-	 *
-	 * @param response
-	 * @return
-	 * @throws Exception
-	 */
-	@RequestMapping("/user")
-	@ResponseBody
-	public ModelAndView getUser(HttpServletResponse response) throws Exception {
-		//获取文档对象
-		DocumentBuilderFactory newInstance = DocumentBuilderFactory.newInstance();
-		DocumentBuilder newDocumentBuilder = newInstance.newDocumentBuilder();
-		Document doc = newDocumentBuilder.newDocument();
-
-		//获取根节点
-		Element documentElement = doc.createElement("document");
-		doc.appendChild(documentElement);
-
-		//创建连接
-		HttpGet httpGet = new HttpGet("http://192.168.101.8:31001/config/userList");
-
-		//获取请求体
-		CloseableHttpResponse execute = HttpClients.createDefault().execute(httpGet);
-		HttpEntity entity = execute.getEntity();
-
-		if (entity != null) {
-
-			String string = EntityUtils.toString(entity, "UTF-8");
-
-			JSONArray array = new JSONArray(string);
-			for (int i = 0; i < array.length(); i++) {
-				Element mtsElement = doc.createElement("mts");
-				documentElement.appendChild(mtsElement);
-				JSONObject object = array.getJSONObject(i);
-				Iterator<String> keys = object.keys();
-
-				for (int j = 0; j < object.length(); j++) {
-					String next = keys.next();
-
-					if (!"dvalue".equals(next)) {
-						Element nextElement = doc.createElement(next);
-						nextElement.appendChild(doc.createTextNode(object.get(next).toString()));
-						mtsElement.appendChild(nextElement);
-					}
-
-					if ("dvalue".equals(next)) {
-						JSONArray dvalueArray = object.getJSONArray(next);
-						mtsElement.setAttribute("name", (dvalueArray.length() + 1) + "");
-						for (int k = 0; k < dvalueArray.length(); k++) {
-							Element nextElement = doc.createElement(next);
-							mtsElement.appendChild(nextElement);
-							JSONObject dvalueObject = dvalueArray.getJSONObject(k);
-							Iterator<String> dvalueKeys = dvalueObject.keys();
-
-							while (dvalueKeys.hasNext()) {
-								String dvalueNext = dvalueKeys.next();
-								Element dvalueElement = doc.createElement(dvalueNext);
-								dvalueElement.appendChild(doc.createTextNode(dvalueObject.get(dvalueNext).toString()));
-								nextElement.appendChild(dvalueElement);
-							}
-						}
-					}
-				}
-			}
-		}
-		Source source = new DOMSource(doc);
-		// 将XML源文件添加到模型中，以便XsltView能够检测
-		ModelAndView model = new ModelAndView("user");
-		model.addObject("xmlSource", source);
-
-		return model;
-		//TransformerFactory.newInstance().newTransformer().transform(new DOMSource(doc), new StreamResult(response.getOutputStream()));
-	}
-
-	/*---------------------------------------------------------------------------------------------*/
-	//生成数据
-	public JSONArray getArray() {
-		JSONArray array = new JSONArray();
-		for (int i = 1; i < 10; i++) {
-			JSONArray array2 = new JSONArray();
-			array.put(array2);
-			for (int j = 1; j <= i; j++) {
-				JSONObject object = new JSONObject();
-				object.put("key1", i).put("key2", j).put("key3", (i * j));
-				array2.put(object);
-			}
-		}
 		return array;
 	}
 
-	@RequestMapping("/jjcfb")
-	@ResponseBody
-	public ModelAndView getXml(HttpServletResponse response) throws Exception {
-		//获取文档对象
-		DocumentBuilderFactory newInstance = DocumentBuilderFactory.newInstance();
-		DocumentBuilder newDocumentBuilder = newInstance.newDocumentBuilder();
-		Document doc = newDocumentBuilder.newDocument();
-
-		//创建根节点
-		Element documentElement = doc.createElement("document");
-		doc.appendChild(documentElement);
-
-		//获取数据
-		JSONArray array = getArray();
-
-		//循环
-		for (int i = 0; i < array.length(); i++) {
-			getDocument(array, documentElement, doc, i, 1);
-		}
-
-		//添加中间隔离区
-		Element mtsElement = doc.createElement("mts");
-		Element msElement = doc.createElement("ms");
-		msElement.setAttribute("name", "10");
-		mtsElement.appendChild(msElement);
-		documentElement.appendChild(mtsElement);
-
-		//循环
-		for (int i = array.length() - 1; i >= 0; i--) {
-			getDocument(array, documentElement, doc, i, 2);
-		}
-
-		Source source = new DOMSource(doc);
-		// 将XML源文件添加到模型中，以便XsltView能够检测
-		ModelAndView model = new ModelAndView("jjcfb");
-		model.addObject("xmlSource", source);
-
-		return model;
-		//TransformerFactory.newInstance().newTransformer().transform(new DOMSource(doc), new StreamResult(response.getOutputStream()));
-	}
-
-	//获取document
-	public void getDocument(JSONArray array, Element documentElement, Document doc, int s, int w) {
-		Element mtsElement = doc.createElement("mts");
-		documentElement.appendChild(mtsElement);
-		JSONArray array2 = array.getJSONArray(s);
-
-		if (w == 1) {
-			for (int j = 0; j < array2.length(); j++) {
-				JSONObject object = array2.getJSONObject(j);
-				Element msElement = getElement(object, doc, 1);
-				mtsElement.appendChild(msElement);
-			}
-			Element msElement = doc.createElement("ms");
-			msElement.setAttribute("name", (9 - s) + "");
-			mtsElement.appendChild(msElement);
-		} else {
-			Element mssElement = doc.createElement("ms");
-			mssElement.setAttribute("name", (9 - s) + "");
-			mtsElement.appendChild(mssElement);
-			for (int j = array2.length() - 1; j >= 0; j--) {
-				JSONObject object = array2.getJSONObject(j);
-				Element msElement = getElement(object, doc, 2);
-				mtsElement.appendChild(msElement);
-			}
-		}
-
-	}
-
-	//获取数据
-	public Element getElement(JSONObject object, Document doc, int i) {
-		Element msElement = doc.createElement("ms");
-		if (i == 2) {
-			msElement.setAttribute("value", "");
-		}
-
-		Element key1Element = doc.createElement("key1");
-		key1Element.appendChild(doc.createTextNode(object.get("key1").toString()));
-		msElement.appendChild(key1Element);
-		Element key2Element = doc.createElement("key2");
-		key2Element.appendChild(doc.createTextNode(object.get("key2").toString()));
-		msElement.appendChild(key2Element);
-		Element key3Element = doc.createElement("key3");
-		key3Element.appendChild(doc.createTextNode(object.get("key3").toString()));
-		msElement.appendChild(key3Element);
-		return msElement;
-	}
-	/*------------------------------------------------------------------------------------*/
-
-	@RequestMapping("/getArr")
-	@ResponseBody
-	public String getArr(String nid) throws IOException{
-		//创建连接
-		HttpGet httpGet = new HttpGet("http://192.168.101.8:31001/config/arr?nid="+nid);
-		
-		//获取请求体
-		CloseableHttpResponse execute = HttpClients.createDefault().execute(httpGet);
-		HttpEntity entity = execute.getEntity();
-		
-		if (entity != null) {
-			String string = EntityUtils.toString(entity,"UTF-8");
-			return string;
-		}
-		return null;
+	public JSONObject getObject(String div1, String div2, String class1, String class2) {
+		JSONObject object = new JSONObject();
+		object.put("div1", div1);
+		object.put("class1", class1);
+		object.put("div2", div2);
+		object.put("class2", class2);
+		return object;
 	}
 }
