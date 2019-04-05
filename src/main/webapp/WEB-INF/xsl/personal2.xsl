@@ -11,160 +11,8 @@
 			<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"/>
 			<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.bundle.min.js"></script>
 			<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-			<style type="text/css">
-				body {
-				margin-top: auto;
-				background-color: #f1f1f1;
-				}
-
-				.border {
-				border-bottom: 1px solid #F1F1F1;
-				margin-bottom: 10px;
-				}
-
-				.main-secction {
-				box-shadow: 10px 10px 10px;
-				}
-
-				.image-section {
-				padding: 0px;
-				}
-
-				.image-section img {
-				width: 100%;
-				height: 250px;
-				position: relative;
-				}
-
-				.user-image {
-				position: absolute;
-				margin-top: -50px;
-				}
-
-				.user-left-part {
-				margin: 0px;
-				}
-
-				.user-image img {
-				width: 100px;
-				height: 100px;
-				}
-
-				.user-profil-part {
-				padding-bottom: 30px;
-				background-color: #FAFAFA;
-				}
-
-				.follow {
-				margin-top: 70px;
-				}
-
-				.user-detail-row {
-				margin: 0px;
-				}
-
-				.user-detail-section2 p {
-				font-size: 12px;
-				padding: 0px;
-				margin: 0px;
-				}
-
-				.user-detail-section2 {
-				margin-top: 10px;
-				}
-
-				.user-detail-section2 span {
-				color: #7CBBC3;
-				font-size: 20px;
-				}
-
-				.user-detail-section2 small {
-				font-size: 12px;
-				color: #D3A86A;
-				}
-
-				.profile-right-section {
-				padding: 20px 0px 10px 15px;
-				background-color: #FFFFFF;
-				}
-
-				.profile-right-section-row {
-				margin: 0px;
-				}
-
-				.profile-header-section1 h1 {
-				font-size: 25px;
-				margin: 0px;
-				}
-
-				.profile-header-section1 h5 {
-				color: #0062cc;
-				}
-
-				.req-btn {
-				height: 30px;
-				font-size: 12px;
-				}
-
-				.profile-tag {
-				padding: 10px;
-				border: 1px solid #F6F6F6;
-				}
-
-				.profile-tag p {
-				font-size: 12px;
-				color: black;
-				}
-
-				.profile-tag i {
-				color: #ADADAD;
-				font-size: 20px;
-				}
-
-				.image-right-part {
-				background-color: #FCFCFC;
-				margin: 0px;
-				padding: 5px;
-				}
-
-				.img-main-rightPart {
-				background-color: #FCFCFC;
-				margin-top: auto;
-				}
-
-				.image-right-detail {
-				padding: 0px;
-				}
-
-				.image-right-detail p {
-				font-size: 12px;
-				}
-
-				.image-right-detail a:hover {
-				text-decoration: none;
-				}
-
-				.image-right img {
-				width: 100%;
-				}
-
-				.image-right-detail-section2 {
-				margin: 0px;
-				}
-
-				.image-right-detail-section2 p {
-				color: #38ACDF;
-				margin: 0px;
-				}
-
-				.image-right-detail-section2 span {
-				color: #7F7F7F;
-				}
-
-				.nav-link {
-				font-size: 1.2em;
-				}
-			</style>
+			<script src="js/personal2.js"></script>
+			<link rel="stylesheet" href="css/pers.css" type="text/css"/>
 			<body>
 				<div class="container">
 					<div class="row">
@@ -214,68 +62,45 @@
 									<div class="col-md-12 profile-header">
 										<div class="row">
 											<div class="col-md-8 col-sm-6 col-xs-6 profile-header-section1">
-												<h1><xsl:value-of select="nickname"/></h1>
+												<h1>
+													<xsl:value-of select="nickname"/>
+												</h1>
 												<h5>明星賣家</h5>
+												<h5>每行<select onchange="getId()" id="select">
+														<option selected=""></option>
+														<option value="1">1</option>
+														<option value="2">2</option>
+														<option value="3">3</option>
+														<option value="4">4</option>
+														<option value="5">5</option>
+													</select>条</h5>
 											</div>
-											<div class="col-md-8 col-sm-6 col-xs-6 ">
-												<div class="row mt-1">
-													<div class="col-sm-4">
-														<div class="thumbnail">                         
-															<a href="#" class="">                               
-																<img src="https://via.placeholder.com/180" alt="..." class=""/>
-															</a>                                                
-														</div>
-													</div>
-													<div class="col-sm-4">
-														<div class="thumbnail">                         
-															<a href="#" class="">                               
-																<img src="https://via.placeholder.com/180" alt="..." class=""/>
-															</a>                                                
-														</div>
-													</div>
-													<div class="col-sm-4">
-														<div class="thumbnail">                         
-															<a href="#" class="">                               
-																<img src="https://via.placeholder.com/180" alt="..." class=""/>
-															</a>                                                
-														</div>
-													</div>                                        
-												</div>
-												<div class="row mt-1">
-													<div class="col-sm-4">
-														<div class="thumbnail">                         
-															<a href="#" class="">                               
-																<img src="https://via.placeholder.com/180" alt="..." class=""/>
-															</a>                                                
-														</div>
-													</div>
-													<div class="col-sm-4">
-														<div class="thumbnail">                         
-															<a href="#" class="">                               
-																<img src="https://via.placeholder.com/180" alt="..." class=""/>
-															</a>                                                
-														</div>
-													</div>
-													<div class="col-sm-4">
-														<div class="thumbnail">                         
-															<a href="#" class="">                               
-																<img src="https://via.placeholder.com/180" alt="..." class=""/>
-															</a>                                                
-														</div>
-													</div>                                        
-												</div>
-                                   
+											<div class="col-md-8 col-sm-6 col-xs-6 " id="divs">
+												<xsl:apply-templates select="userStory/storyImages"/>	
 											</div>                               
 										</div>
 									</div>
-                        
 								</div>
 							</div>
-                
 						</div>
 					</div>
 				</div>  
 			</body>
 		</html>
 	</xsl:template>	
+	<xsl:template match="storyImages"> 
+		<div class="row mt-1">
+			<xsl:apply-templates select="storyImage"/>	                                  
+		</div>
+	</xsl:template>
+	
+	<xsl:template match="storyImage"> 
+		<div class="col-sm-4">
+			<div class="thumbnail">                         
+				<a href="#" class="">                               
+					<img src="{@imgUrl}" alt="..." class=""/>
+				</a>                                                
+			</div>
+		</div> 
+	</xsl:template>
 </xsl:stylesheet>  

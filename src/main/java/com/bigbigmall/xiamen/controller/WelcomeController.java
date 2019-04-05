@@ -33,13 +33,34 @@ import org.w3c.dom.Element;
 @RequestMapping("/")
 public class WelcomeController {
 
+	@RequestMapping("/getPersonalJson")
+	@ResponseBody
+	public String getPersonalJson() throws Exception {
+
+		//创建连接
+		HttpGet httpGet = new HttpGet("https://redan-api.herokuapp.com/personnels/search/findOneById?id=3");
+
+		//获取请求体
+		CloseableHttpResponse execute = HttpClients.createDefault().execute(httpGet);
+		HttpEntity entity = execute.getEntity();
+
+		if (entity != null) {
+			String string = EntityUtils.toString(entity, "UTF-8");
+			return new JSONObject(string).toString();
+		}
+
+		return null;
+	}
+
+	/*------------------------------------------------------------------------------------*/
 	/**
 	 * 2019-4-4 个人页面
 	 * https://redan-api.herokuapp.com/personnels/search/findOneById?id=3
 	 */
-	@RequestMapping("/personal2")
+	@RequestMapping("/personal2Xslt")
 	@ResponseBody
 	public ModelAndView getPersonal2(HttpServletResponse response) throws Exception {
+
 		//获取文档对象
 		DocumentBuilderFactory newInstance = DocumentBuilderFactory.newInstance();
 		DocumentBuilder newDocumentBuilder = newInstance.newDocumentBuilder();
@@ -70,6 +91,21 @@ public class WelcomeController {
 				}
 				if ("nickname".equals(next) || "universallyUniqueIdentifier".equals(next) || "id".equals(next)) {
 					nextElement.appendChild(doc.createTextNode(object.get(next).toString()));
+				}
+				if ("userStory".equals(next)) {
+					JSONArray array = object.getJSONArray(next);
+					Element storyImagesElement = null;
+					for (int j = 0; j < array.length(); j++) {
+						if (j == 0 || j % 3 == 0) {
+							storyImagesElement = doc.createElement("storyImages");
+							nextElement.appendChild(storyImagesElement);
+						}
+						JSONObject object2 = array.getJSONObject(j);
+						Element storyImageElement = doc.createElement("storyImage");
+						storyImagesElement.appendChild(storyImageElement);
+						JSONObject storyImageObject = object2.getJSONObject("storyImage");
+						storyImageElement.setAttribute("imgUrl", storyImageObject.get("imgUrl").toString());
+					}
 				}
 			}
 		}
