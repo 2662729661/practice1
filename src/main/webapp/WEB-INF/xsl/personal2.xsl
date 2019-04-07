@@ -66,14 +66,14 @@
 													<xsl:value-of select="nickname"/>
 												</h1>
 												<h5>明星賣家</h5>
-												<h5>每行<select onchange="getId()" id="select">
-														<option selected=""></option>
-														<option value="1">1</option>
-														<option value="2">2</option>
-														<option value="3">3</option>
-														<option value="4">4</option>
-														<option value="5">5</option>
-													</select>条</h5>
+												<!--<h5>每行<select onchange="getId()" id="select">
+													<option selected=""></option>
+													<option value="1">1</option>
+													<option value="2">2</option>
+													<option value="3">3</option>
+													<option value="4">4</option>
+													<option value="5">5</option>
+												</select>条</h5>-->
 											</div>
 											<div class="col-md-8 col-sm-6 col-xs-6 " id="divs">
 												<xsl:apply-templates select="userStory/storyImages"/>	
@@ -98,7 +98,7 @@
 		<div class="col-sm-4">
 			<div class="thumbnail">                         
 				<a href="#" class="">                               
-					<img src="{@imgUrl}" alt="..." class=""/>
+					<img src="{@imgUrl}" alt="..." class="image-imUrl"/>
 				</a>                                                
 			</div>
 		</div> 
