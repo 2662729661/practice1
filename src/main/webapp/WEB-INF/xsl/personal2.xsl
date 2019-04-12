@@ -11,19 +11,19 @@
 			<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"/>
 			<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.bundle.min.js"></script>
 			<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-			<script src="js/personal2.js"></script>
-			<link rel="stylesheet" href="css/pers.css" type="text/css"/>
+			<script src="resources/js/personal2.js"></script>
+			<link rel="stylesheet" href="resources/css/pers.css" type="text/css"/>
 			<body>
 				<div class="container">
 					<div class="row">
 						<div class="col-md-12 col-sm-12 col-xs-12 image-section">
-							<img src="{coverImgUrl/@text}"/>
+							<img src="{coverImgUrl/@src}"/>
 						</div>
 						<div class="row user-left-part">
 							<div class="col-md-3 col-sm-3 col-xs-12 user-profil-part pull-left">
 								<div class="row ">
 									<div class="col-md-12 col-md-12-sm-12 col-xs-12 user-image text-center">
-										<img src="{profileImgUrl/@text}" class="rounded-circle"/>
+										<img src="{profileImgUrl/@src}" class="rounded-circle"/>
 									</div>
 									<div class="col-md-12 col-sm-12 col-xs-12 user-detail-section1 text-center">
 										<button id="btn-contact" click="clearModal()" data-toggle="modal" data-target="#contact" class="btn btn-success btn-block follow">加他好友</button>
@@ -32,13 +32,17 @@
 									<div class="d-flex justify-content-center">
 										<div class="col-md-12 col-sm-12 user-detail-section2 pull-left">
 											<p>追蹤者</p>
-											<span>320</span>
+											<span>
+												<xsl:value-of select="followerCount"/>
+											</span>
 										</div>
 									</div>
 									<div class="d-flex justify-content-center">
 										<div class="col-md-12 col-sm-12 user-detail-section2 ">
 											<p>貼文</p>
-											<span>320</span>
+											<span>
+												<xsl:value-of select="userStoryCount"/>
+											</span>
 										</div>
 									</div>
 									<div class="d-flex justify-content-center">
@@ -48,12 +52,7 @@
 										</div>
 									</div>
 									<div class="d-flex justify-content-center">
-										Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-										tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-										quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-										consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
-										cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-										proident, sunt in culpa qui officia deserunt mollit anim id est laborum. 
+										<xsl:value-of select="profileText"/>
 									</div>
 								</div>
 							</div>
@@ -66,7 +65,7 @@
 													<xsl:value-of select="nickname"/>
 												</h1>
 												<h5>明星賣家</h5>
-												<!--<h5>每行<select onchange="getId()" id="select">
+												<!--<h5>每行<select onchange="getId({id})" id="select">
 													<option selected=""></option>
 													<option value="1">1</option>
 													<option value="2">2</option>

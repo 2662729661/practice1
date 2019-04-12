@@ -1,17 +1,12 @@
 package com.bigbigmall.xiamen.controller;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Result;
 import javax.xml.transform.Source;
-import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -80,33 +75,59 @@ public class WelcomeController {
 		if (entity != null) {
 			String string = EntityUtils.toString(entity, "UTF-8");
 
+			//获取所有数据
 			JSONObject object = new JSONObject(string);
-			Iterator<String> keys = object.keys();
-			for (int i = 0; i < object.length(); i++) {
-				String next = keys.next();
-				Element nextElement = doc.createElement(next);
-				documentElement.appendChild(nextElement);
-				if ("coverImgUrl".equals(next) || "profileImgUrl".equals(next)) {
-					nextElement.setAttribute("text", object.get(next).toString());
+
+			//获取非array的数据
+			//coverImgUrl-背景图
+			Element coverImgUrlElement = doc.createElement("coverImgUrl");
+			coverImgUrlElement.setAttribute("src", object.get("coverImgUrl").toString());
+			documentElement.appendChild(coverImgUrlElement);
+
+			//profileImgUrl-头像
+			Element profileImgUrlElement = doc.createElement("profileImgUrl");
+			profileImgUrlElement.setAttribute("src", object.get("profileImgUrl").toString());
+			documentElement.appendChild(profileImgUrlElement);
+
+			//profileText-简介
+			Element profileTextElement = doc.createElement("profileText");
+			profileTextElement.appendChild(doc.createTextNode(object.get("profileText").toString()));
+			documentElement.appendChild(profileTextElement);
+
+			//nickname-用户名
+			Element nicknameElement = doc.createElement("nickname");
+			nicknameElement.appendChild(doc.createTextNode(object.get("nickname").toString()));
+			documentElement.appendChild(nicknameElement);
+
+			//userStoryCount-发表文章数量
+			Element userStoryCountElement = doc.createElement("userStoryCount");
+			userStoryCountElement.appendChild(doc.createTextNode(object.get("userStoryCount").toString()));
+			documentElement.appendChild(userStoryCountElement);
+
+			//followerCount-追随者数量
+			Element followerCountElement = doc.createElement("followerCount");
+			followerCountElement.appendChild(doc.createTextNode(object.get("followerCount").toString()));
+			documentElement.appendChild(followerCountElement);
+
+			//userStory-发表的文章
+			Element userStoryElement = doc.createElement("userStory");
+			documentElement.appendChild(userStoryElement);
+			//userStoryArray
+			JSONArray userStoryArray = object.getJSONArray("userStory");
+			Element storyImagesElement = null;
+			for (int i = 0; i < userStoryArray.length(); i++) {
+				//初始化每行数据条数
+				if (i == 0 || i % 3 == 0) {
+					storyImagesElement = doc.createElement("storyImages");
+					userStoryElement.appendChild(storyImagesElement);
 				}
-				if ("nickname".equals(next) || "universallyUniqueIdentifier".equals(next) || "id".equals(next)) {
-					nextElement.appendChild(doc.createTextNode(object.get(next).toString()));
-				}
-				if ("userStory".equals(next)) {
-					JSONArray array = object.getJSONArray(next);
-					Element storyImagesElement = null;
-					for (int j = 0; j < array.length(); j++) {
-						if (j == 0 || j % 3 == 0) {
-							storyImagesElement = doc.createElement("storyImages");
-							nextElement.appendChild(storyImagesElement);
-						}
-						JSONObject object2 = array.getJSONObject(j);
-						Element storyImageElement = doc.createElement("storyImage");
-						storyImagesElement.appendChild(storyImageElement);
-						JSONObject storyImageObject = object2.getJSONObject("storyImage");
-						storyImageElement.setAttribute("imgUrl", storyImageObject.get("imgUrl").toString());
-					}
-				}
+				JSONObject object2 = userStoryArray.getJSONObject(i);
+				//storyImage-文章信息
+				Element storyImageElement = doc.createElement("storyImage");
+				storyImagesElement.appendChild(storyImageElement);
+				//storyImage/imgUrl-图片信息
+				JSONObject storyImageObject = object2.getJSONObject("storyImage");
+				storyImageElement.setAttribute("imgUrl", storyImageObject.get("imgUrl").toString());
 			}
 		}
 		Source source = new DOMSource(doc);
