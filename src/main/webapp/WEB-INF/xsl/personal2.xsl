@@ -11,8 +11,8 @@
 			<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"/>
 			<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.bundle.min.js"></script>
 			<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-			<script src="resources/js/personal2.js"></script>
-			<link rel="stylesheet" href="resources/css/pers.css" type="text/css"/>
+			<script src="js/personal2.js"></script>
+			<link rel="stylesheet" href="css/pers.css" type="text/css"/>
 			<body>
 				<div class="container">
 					<div class="row">
