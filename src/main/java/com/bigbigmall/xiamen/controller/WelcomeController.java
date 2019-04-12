@@ -1,7 +1,6 @@
 package com.bigbigmall.xiamen.controller;
 
 import java.io.IOException;
-import java.util.Iterator;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -108,6 +107,11 @@ public class WelcomeController {
 			Element followerCountElement = doc.createElement("followerCount");
 			followerCountElement.appendChild(doc.createTextNode(object.get("followerCount").toString()));
 			documentElement.appendChild(followerCountElement);
+			
+			//followingCount-跟踪者数量
+			Element followingCountElement = doc.createElement("followingCount");
+			followingCountElement.appendChild(doc.createTextNode(object.get("followingCount").toString()));
+			documentElement.appendChild(followingCountElement);
 
 			//userStory-发表的文章
 			Element userStoryElement = doc.createElement("userStory");

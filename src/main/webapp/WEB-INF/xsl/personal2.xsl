@@ -48,7 +48,7 @@
 									<div class="d-flex justify-content-center">
 										<div class="col-md-12 col-sm-12 user-detail-section2 pull-right">
 											<p>追蹤中</p>
-											<span>320</span>
+											<span><xsl:value-of select="followingCount"/></span>
 										</div>
 									</div>
 									<div class="d-flex justify-content-center">
